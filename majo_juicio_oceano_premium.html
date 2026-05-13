@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Majo y el Juicio del Océano</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+:root{
+  --bg1:#06142b;
+  --bg2:#092f55;
+  --bg3:#0b6f8f;
+  --aqua:#54f4ff;
+  --violet:#9b7cff;
+  --pink:#ff75c8;
+  --gold:#ffd166;
+  --glass:rgba(255,255,255,.12);
+  --danger:#ff5f7e;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  color:white;
+  background:
+    radial-gradient(circle at 20% 12%,rgba(155,124,255,.55),transparent 28%),
+    radial-gradient(circle at 80% 82%,rgba(84,244,255,.38),transparent 35%),
+    linear-gradient(180deg,var(--bg1),var(--bg2) 48%,var(--bg3));
+}
+
+canvas{
+  display:block;
+  width:100vw;
+  height:100vh;
+}
+
+#gameWrap{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+}
+
+.lightRay{
+  position:absolute;
+  top:-20%;
+  width:22vw;
+  height:140vh;
+  background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 72%);
+  transform:rotate(14deg);
+  filter:blur(12px);
+  animation:sway 7s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+
+.r1{left:10%}
+.r2{left:46%;animation-delay:1.2s}
+.r3{left:75%;animation-delay:2s}
+
+@keyframes sway{
+  from{transform:rotate(10deg) translateX(-18px)}
+  to{transform:rotate(17deg) translateX(18px)}
+}
+
+.panel{
+  position:absolute;
+  z-index:20;
+  background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(16px);
+  box-shadow:0 18px 55px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+.hud{
+  top:12px;
+  left:12px;
+  right:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px;
+  border-radius:24px;
+}
+
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+}
+
+.brand strong{
+  font-size:17px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.brand span{
+  font-size:12px;
+  opacity:.82;
+}
+
+.stats{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.badge{
+  padding:8px 10px;
+  border-radius:16px;
+  background:rgba(0,0,0,.22);
+  font-weight:900;
+  font-size:13px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.progressOuter{
+  position:absolute;
+  z-index:18;
+  top:86px;
+  left:16px;
+  right:16px;
+  height:12px;
+  border-radius:99px;
+  background:rgba(0,0,0,.25);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.16);
+}
+
+.progressInner{
+  width:0%;
+  height:100%;
+  border-radius:99px;
+  background:linear-gradient(90deg,var(--aqua),var(--violet),var(--pink));
+  box-shadow:0 0 18px rgba(84,244,255,.65);
+  transition:width .2s;
+}
+
+.overlay{
+  position:absolute;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(2,10,24,.68);
+  backdrop-filter:blur(12px);
+}
+
+.card{
+  width:min(760px,100%);
+  max-height:92vh;
+  overflow:auto;
+  text-align:center;
+  border-radius:32px;
+  padding:28px 20px;
+}
+
+.logo{
+  width:92px;
+  height:92px;
+  margin:0 auto 12px;
+  display:grid;
+  place-items:center;
+  font-size:52px;
+  border-radius:32px;
+  background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.55),transparent 18%),
+    linear-gradient(135deg,rgba(84,244,255,.35),rgba(155,124,255,.38));
+  box-shadow:0 0 40px rgba(84,244,255,.35);
+}
+
+h1{
+  font-size:clamp(31px,7vw,54px);
+  line-height:1.02;
+  margin:4px 0 8px;
+  text-shadow:0 0 24px rgba(84,244,255,.34);
+}
+
+.subtitle{
+  font-size:16px;
+  opacity:.88;
+  margin-bottom:18px;
+  line-height:1.45;
+}
+
+.rules{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:18px 0;
+  text-align:left;
+}
+
+.ruleBox{
+  padding:14px;
+  border-radius:22px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.ruleBox h3{
+  font-size:15px;
+  margin-bottom:8px;
+  color:var(--aqua);
+}
+
+.ruleBox p{
+  font-size:13.5px;
+  line-height:1.35;
+  opacity:.9;
+}
+
+.controls{
+  margin-top:10px;
+  padding:12px;
+  border-radius:20px;
+  background:rgba(255,255,255,.08);
+  font-size:14px;
+  line-height:1.45;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin-top:20px;
+}
+
+button{
+  border:none;
+  color:white;
+  padding:14px 20px;
+  border-radius:18px;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  background:linear-gradient(135deg,var(--aqua),var(--violet));
+  box-shadow:0 12px 28px rgba(84,244,255,.22);
+  transition:.18s;
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+.secondary{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:none;
+}
+
+.soundBtn{
+  position:absolute;
+  right:16px;
+  bottom:16px;
+  z-index:30;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  padding:0;
+  display:grid;
+  place-items:center;
+}
+
+.floatMsg{
+  position:absolute;
+  left:50%;
+  top:115px;
+  transform:translateX(-50%);
+  z-index:25;
+  padding:10px 16px;
+  border-radius:999px;
+  background:rgba(2,10,24,.48);
+  border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(12px);
+  font-size:14px;
+  animation:msg 3.6s forwards;
+  white-space:nowrap;
+  max-width:92vw;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+@keyframes msg{
+  0%{opacity:0;transform:translateX(-50%) translateY(16px)}
+  12%,84%{opacity:1}
+  100%{opacity:0;transform:translateX(-50%) translateY(-18px)}
+}
+
+.combo{
+  position:absolute;
+  right:18px;
+  top:110px;
+  z-index:24;
+  font-size:30px;
+  font-weight:900;
+  text-shadow:0 0 18px rgba(255,209,102,.9);
+  animation:pop .7s both;
+}
+
+@keyframes pop{
+  0%{transform:scale(.5);opacity:0}
+  50%{transform:scale(1.14);opacity:1}
+  100%{transform:scale(1);opacity:0}
+}
+
+.prizes{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:16px 0 8px;
+}
+
+.prize{
+  padding:15px;
+  border-radius:22px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.16);
+  cursor:pointer;
+  font-weight:900;
+}
+
+.mini{
+  font-size:13px;
+  opacity:.78;
+  margin-top:10px;
+}
+
+.mobileControls{
+  position:absolute;
+  z-index:21;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:18px;
+  opacity:.9;
+}
+
+.ctrl{
+  width:76px;
+  height:58px;
+  border-radius:24px;
+  display:grid;
+  place-items:center;
+  font-size:24px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(12px);
+  user-select:none;
+}
+
+.hidden{display:none!important;}
+
+@media(max-width:640px){
+  .hud{
+    align-items:flex-start;
+  }
+  .brand strong{
+    font-size:14px;
+    max-width:170px;
+  }
+  .brand span{font-size:11px}
+  .badge{
+    font-size:12px;
+    padding:7px 8px;
+  }
+  .progressOuter{
+    top:82px;
+  }
+  .rules{
+    grid-template-columns:1fr;
+  }
+  .card{
+    padding:22px 15px;
+    border-radius:26px;
+  }
+  .prizes{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+<div id="gameWrap">
+  <div class="lightRay r1"></div>
+  <div class="lightRay r2"></div>
+  <div class="lightRay r3"></div>
+
+  <canvas id="game"></canvas>
+
+  <div class="hud panel">
+    <div class="brand">
+      <strong>🌊⚖️ Majo y el Juicio del Océano</strong>
+      <span>Defiende el mar, esquiva el estrés universitario</span>
+    </div>
+    <div class="stats">
+      <div class="badge">✨ <span id="score">0</span></div>
+      <div class="badge">💙 <span id="lives">3</span></div>
+      <div class="badge">⚡ Nivel <span id="level">1</span></div>
+      <div class="badge">🔥 x<span id="combo">0</span></div>
+    </div>
+  </div>
+
+  <div class="progressOuter">
+    <div class="progressInner" id="progress"></div>
+  </div>
+
+  <div class="mobileControls">
+    <div class="ctrl" id="leftBtn">⬅️</div>
+    <div class="ctrl" id="rightBtn">➡️</div>
+  </div>
+
+  <button class="soundBtn" id="soundBtn" onclick="toggleSound()">🔇</button>
+
+  <div id="start" class="overlay">
+    <div class="card panel">
+      <div class="logo">🧜🏻‍♀️</div>
+      <h1>Majo y el Juicio del Océano</h1>
+      <p class="subtitle">
+        Un minijuego para desestresarse: Majo entra al Tribunal Marino para salvar el océano
+        mientras esquiva tareas, PDFs eternos y tiburones fiscales.
+      </p>
+
+      <div class="rules">
+        <div class="ruleBox">
+          <h3>✅ Atrapa</h3>
+          <p>🐢 tortugas, 🐬 delfines, ⭐ estrellas, ⚖️ justicia marina, 💎 perlas y 🐠 peces brillantes. Dan puntos y suben tu combo.</p>
+        </div>
+        <div class="ruleBox">
+          <h3>❌ Evita</h3>
+          <p>🦈 tiburón fiscal, 📚 Código infinito, 🗑️ basura, 📢 entrega para mañana, ☕ café derramado y 😭 estrés.</p>
+        </div>
+        <div class="ruleBox">
+          <h3>🎯 Objetivo</h3>
+          <p>Llega a 500 puntos para ganar el juicio del océano y desbloquear premios. Cada nivel aumenta la velocidad.</p>
+        </div>
+        <div class="ruleBox">
+          <h3>🔥 Combo</h3>
+          <p>Atrapa 5 objetos buenos seguidos para activar “Modo Marea”: durante unos segundos ganas más puntos.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        En iPhone: mueve a Majo con el dedo o usa los botones ⬅️ ➡️.<br>
+        En laptop: usa mouse, teclas ← → o A/D.
+      </div>
+
+      <div class="actions">
+        <button onclick="startGame()">Empezar</button>
+        <button class="secondary" onclick="showStory()">Ver historia</button>
+      </div>
+      <p class="mini">Consejo: activa sonido después de iniciar si quieres efectos suaves.</p>
+    </div>
+  </div>
+
+  <div id="story" class="overlay hidden">
+    <div class="card panel">
+      <div class="logo">🐙</div>
+      <h1>El caso</h1>
+      <p class="subtitle">
+        El océano está siendo demandado por “exceso de drama universitario”.
+        Majo debe reunir pruebas, salvar criaturas marinas y sobrevivir al legendario Código Civil Infinito.
+      </p>
+      <div class="actions">
+        <button onclick="hideStory()">Listo, voy al juicio</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="end" class="overlay hidden">
+    <div class="card panel">
+      <div class="logo" id="endIcon">🌊</div>
+      <h1 id="endTitle"></h1>
+      <p class="subtitle" id="endText"></p>
+      <div id="prizeBox" class="prizes hidden">
+        <div class="prize" onclick="claimPrize(this)">☕ Café imaginario premium</div>
+        <div class="prize" onclick="claimPrize(this)">🌊 Pase VIP al mar</div>
+        <div class="prize" onclick="claimPrize(this)">😴 Siesta legalmente aprobada</div>
+        <div class="prize" onclick="claimPrize(this)">🐬 Licencia para hablar con delfines</div>
+      </div>
+      <p id="claimText" class="mini"></p>
+      <div class="actions">
+        <button onclick="restart()">Jugar otra vez</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W,H,dpr;
+function resize(){
+  dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  W = innerWidth;
+  H = innerHeight;
+  canvas.width = W*dpr;
+  canvas.height = H*dpr;
+  canvas.style.width = W+"px";
+  canvas.style.height = H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+resize();
+addEventListener("resize",resize);
+
+const scoreEl=document.getElementById("score");
+const livesEl=document.getElementById("lives");
+const levelEl=document.getElementById("level");
+const comboEl=document.getElementById("combo");
+const progressEl=document.getElementById("progress");
+
+let running=false;
+let score=0;
+let lives=3;
+let level=1;
+let combo=0;
+let speed=2.7;
+let spawnRate=790;
+let lastSpawn=0;
+let lastTime=0;
+let waveUntil=0;
+let moveDir=0;
+let soundOn=false;
+let audioCtx=null;
+
+const targetScore=500;
+const player={x:0,y:0,w:62,h:62,tilt:0};
+const items=[];
+const particles=[];
+const fishes=[];
+const bubbles=[];
+
+const good=[
+  {e:"🐢",p:18,n:"tortuga"},
+  {e:"🐬",p:22,n:"delfín"},
+  {e:"⭐",p:14,n:"estrella"},
+  {e:"⚖️",p:20,n:"justicia marina"},
+  {e:"💎",p:25,n:"perla"},
+  {e:"🐠",p:16,n:"pez"}
+];
+
+const bad=[
+  {e:"🦈",d:1,n:"tiburón fiscal"},
+  {e:"📚",d:1,n:"Código infinito"},
+  {e:"🗑️",d:1,n:"basura marina"},
+  {e:"📢",d:1,n:"entrega para mañana"},
+  {e:"☕",d:1,n:"café derramado"},
+  {e:"😭",d:1,n:"estrés universitario"}
+];
+
+const messages=[
+  "Majo presentó pruebas submarinas impecables ⚖️",
+  "El estrés pidió prórroga y se la negaron 😌",
+  "El tiburón fiscal está revisando jurisprudencia 🦈",
+  "Combo bonito, argumento sólido ✨",
+  "El océano respira un poquito mejor 🌊",
+  "Ese PDF no tenía anexos, tenía océanos 📚",
+  "La defensa de las tortugas va ganando 🐢"
+];
+
+function resetGame(){
+  score=0;lives=3;level=1;combo=0;speed=2.7;spawnRate=790;lastSpawn=0;waveUntil=0;
+  items.length=0;particles.length=0;
+  player.x=W/2;player.y=H-112;
+  updateHud();
+}
+
+function startGame(){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("story").classList.add("hidden");
+  document.getElementById("end").classList.add("hidden");
+  resetGame();
+  running=true;
+  lastTime=performance.now();
+  makeToast("Audiencia iniciada: protege el océano 🌊");
+  requestAnimationFrame(loop);
+}
+
+function restart(){ startGame(); }
+
+function showStory(){
+  document.getElementById("story").classList.remove("hidden");
+}
+function hideStory(){
+  document.getElementById("story").classList.add("hidden");
+}
+
+function updateHud(){
+  scoreEl.textContent=score;
+  livesEl.textContent=lives;
+  levelEl.textContent=level;
+  comboEl.textContent=combo;
+  progressEl.style.width=Math.min(100,(score/targetScore)*100)+"%";
+}
+
+function spawnItem(now){
+  const chanceGood=Math.random()>.34;
+  const src=chanceGood?good[Math.floor(Math.random()*good.length)]:bad[Math.floor(Math.random()*bad.length)];
+  const size=chanceGood?42+Math.random()*8:44+Math.random()*10;
+  items.push({
+    x:40+Math.random()*(W-80),
+    y:-60,
+    vx:(Math.random()-.5)*(1+level*.18),
+    vy:speed+Math.random()*1.8,
+    size,
+    rot:(Math.random()-.5)*.03,
+    good:chanceGood,
+    ...src
+  });
+  lastSpawn=now;
+}
+
+function drawOcean(t){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#07142f");
+  g.addColorStop(.55,"#07466e");
+  g.addColorStop(1,"#0b8fac");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.globalAlpha=.18;
+  for(let i=0;i<5;i++){
+    ctx.beginPath();
+    const y=H*.18+i*H*.16+Math.sin(t/900+i)*16;
+    ctx.moveTo(0,y);
+    for(let x=0;x<=W;x+=28){
+      ctx.lineTo(x,y+Math.sin(x/70+t/900+i)*12);
+    }
+    ctx.strokeStyle=i%2?"#ffffff":"#54f4ff";
+    ctx.lineWidth=2;
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  ctx.fillStyle="rgba(255,255,255,.16)";
+  bubbles.forEach(b=>{
+    b.y-=b.s;
+    b.x+=Math.sin(t/700+b.o)*.35;
+    if(b.y<-20){b.y=H+20;b.x=Math.random()*W}
+    ctx.beginPath();
+    ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.fill();
+  });
+
+  fishes.forEach(f=>{
+    f.x+=f.s;
+    if(f.x>W+50)f.x=-50;
+    ctx.globalAlpha=.18;
+    ctx.font=f.z+"px Arial";
+    ctx.fillText("🐟",f.x,f.y+Math.sin(t/500+f.o)*12);
+    ctx.globalAlpha=1;
+  });
+}
+
+function drawPlayer(t){
+  player.y=H-112+Math.sin(t/260)*4;
+  player.x=Math.max(30,Math.min(W-80,player.x));
+  ctx.save();
+  ctx.translate(player.x+28,player.y-22);
+  ctx.rotate(player.tilt);
+  ctx.font="64px Arial";
+  ctx.textAlign="center";
+  ctx.shadowColor=Date.now()<waveUntil?"#ffd166":"#54f4ff";
+  ctx.shadowBlur=18;
+  ctx.fillText("🧜🏻‍♀️",0,0);
+  ctx.restore();
+
+  if(Date.now()<waveUntil){
+    ctx.save();
+    ctx.globalAlpha=.55;
+    ctx.strokeStyle="#ffd166";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.arc(player.x+28,player.y-32,48+Math.sin(t/120)*5,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawItems(dt){
+  ctx.textAlign="left";
+  for(let i=items.length-1;i>=0;i--){
+    const it=items[i];
+    it.y+=it.vy*dt;
+    it.x+=it.vx*dt;
+    it.vx+=Math.sin((it.y+i)/70)*.01;
+    ctx.save();
+    ctx.translate(it.x,it.y);
+    ctx.rotate(Math.sin(it.y/50)*it.rot*10);
+    ctx.font=it.size+"px Arial";
+    ctx.shadowColor=it.good?"rgba(84,244,255,.7)":"rgba(255,95,126,.65)";
+    ctx.shadowBlur=it.good?12:16;
+    ctx.fillText(it.e,0,0);
+    ctx.restore();
+
+    const px=player.x+28, py=player.y-34;
+    const dx=(it.x+it.size/2)-px;
+    const dy=(it.y-it.size/2)-py;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+
+    if(dist<46){
+      if(it.good){
+        const multiplier=Date.now()<waveUntil?2:1;
+        score+=it.p*multiplier;
+        combo++;
+        popParticles(it.x,it.y,it.good);
+        tone(620,.05);
+        if(combo>0 && combo%5===0){
+          waveUntil=Date.now()+5200;
+          makeToast("🌟 Modo Marea activado: puntos x2");
+          showCombo("x2");
+          tone(880,.12);
+        }else if(combo>=3){
+          showCombo("x"+combo);
+        }
+      }else{
+        lives-=it.d;
+        combo=0;
+        popParticles(it.x,it.y,false);
+        makeToast("Objeción denegada: "+it.n+" 😭");
+        tone(180,.1);
+        navigator.vibrate?.(100);
+      }
+      items.splice(i,1);
+      levelUpCheck();
+      updateHud();
+      if(lives<=0) return finish(false);
+      if(score>=targetScore) return finish(true);
+    }else if(it.y>H+80){
+      items.splice(i,1);
+    }
+  }
+}
+
+function levelUpCheck(){
+  const newLevel=Math.min(9,Math.floor(score/80)+1);
+  if(newLevel>level){
+    level=newLevel;
+    speed+=.45;
+    spawnRate=Math.max(330,790-level*52);
+    makeToast("Nivel "+level+": el juicio se pone intenso ⚡");
+  }
+}
+
+function popParticles(x,y,goodHit){
+  for(let i=0;i<16;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-.5)*6,
+      vy:(Math.random()-.5)*6,
+      life:1,
+      c:goodHit?"rgba(84,244,255,":"rgba(255,95,126,"
+    });
+  }
+}
+
+function drawParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx*dt;
+    p.y+=p.vy*dt;
+    p.vy+=.03*dt;
+    p.life-=.025*dt;
+    if(p.life<=0){particles.splice(i,1);continue}
+    ctx.fillStyle=p.c+p.life+")";
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,3+p.life*3,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function loop(now){
+  if(!running)return;
+  const dt=Math.min(2.2,(now-lastTime)/16.67);
+  lastTime=now;
+
+  if(moveDir!==0){
+    player.x+=moveDir*8.2*dt;
+    player.tilt=moveDir*.15;
+  }else{
+    player.tilt*=.88;
+  }
+
+  drawOcean(now);
+  if(now-lastSpawn>spawnRate)spawnItem(now);
+  drawItems(dt);
+  drawParticles(dt);
+  drawPlayer(now);
+
+  requestAnimationFrame(loop);
+}
+
+function finish(win){
+  running=false;
+  document.getElementById("end").classList.remove("hidden");
+  const title=document.getElementById("endTitle");
+  const text=document.getElementById("endText");
+  const icon=document.getElementById("endIcon");
+  const prize=document.getElementById("prizeBox");
+  document.getElementById("claimText").textContent="";
+
+  if(win){
+    icon.textContent="🏆";
+    title.textContent="¡Majo ganó el juicio del océano!";
+    text.innerHTML="El Tribunal Marino declaró al océano oficialmente protegido. Puntaje final: <b>"+score+"</b> ✨";
+    prize.classList.remove("hidden");
+    tone(760,.2); setTimeout(()=>tone(980,.2),170);
+  }else{
+    const loses=[
+      "El tiburón fiscal presentó demasiadas pruebas 🦈",
+      "El Código Civil Infinito cayó con daño crítico 📚",
+      "El estrés universitario hizo combo de tres 😭",
+      "La audiencia se suspendió por exceso de drama marino 🐙"
+    ];
+    icon.textContent="🐙";
+    title.textContent="Fin del juego";
+    text.textContent=loses[Math.floor(Math.random()*loses.length)]+" Puntaje final: "+score+".";
+    prize.classList.add("hidden");
+  }
+}
+
+function claimPrize(el){
+  document.getElementById("claimText").textContent="🎉 Premio elegido: "+el.textContent+". Majo se lo ganó legalmente.";
+  tone(900,.08);
+}
+
+function makeToast(text){
+  const d=document.createElement("div");
+  d.className="floatMsg";
+  d.textContent=text;
+  document.getElementById("gameWrap").appendChild(d);
+  setTimeout(()=>d.remove(),3600);
+}
+
+function showCombo(text){
+  const d=document.createElement("div");
+  d.className="combo";
+  d.textContent=text;
+  document.getElementById("gameWrap").appendChild(d);
+  setTimeout(()=>d.remove(),700);
+}
+
+function tone(freq,dur){
+  if(!soundOn || !audioCtx)return;
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  o.frequency.value=freq;
+  o.type="sine";
+  g.gain.value=.05;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);
+  o.stop(audioCtx.currentTime+dur);
+}
+
+function toggleSound(){
+  soundOn=!soundOn;
+  if(soundOn && !audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  document.getElementById("soundBtn").textContent=soundOn?"🔊":"🔇";
+  tone(600,.08);
+}
+
+addEventListener("mousemove",e=>{
+  player.x=e.clientX-28;
+});
+
+addEventListener("touchmove",e=>{
+  if(e.touches[0]){
+    player.x=e.touches[0].clientX-28;
+  }
+},{passive:true});
+
+addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")moveDir=-1;
+  if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")moveDir=1;
+});
+
+addEventListener("keyup",e=>{
+  if(["ArrowLeft","ArrowRight","a","d","A","D"].includes(e.key))moveDir=0;
+});
+
+document.getElementById("leftBtn").addEventListener("touchstart",()=>moveDir=-1);
+document.getElementById("rightBtn").addEventListener("touchstart",()=>moveDir=1);
+document.getElementById("leftBtn").addEventListener("touchend",()=>moveDir=0);
+document.getElementById("rightBtn").addEventListener("touchend",()=>moveDir=0);
+document.getElementById("leftBtn").addEventListener("mousedown",()=>moveDir=-1);
+document.getElementById("rightBtn").addEventListener("mousedown",()=>moveDir=1);
+addEventListener("mouseup",()=>moveDir=0);
+
+for(let i=0;i<70;i++){
+  bubbles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:1+Math.random()*4,s:.25+Math.random()*1.1,o:Math.random()*10});
+}
+for(let i=0;i<9;i++){
+  fishes.push({x:Math.random()*innerWidth,y:140+Math.random()*(innerHeight-260),s:.2+Math.random()*.55,z:18+Math.random()*12,o:Math.random()*10});
+}
+resetGame();
+drawOcean(0);
+drawPlayer(0);
+</script>
+</body>
+</html>
